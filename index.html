@@ -551,7 +551,9 @@ console.log(message);</textarea>
                     // Force reload the script with cache busting
                     const timestamp = new Date().getTime();
                     const script = document.getElementById('targetScript');
-                    script.src = `./toBeOverWritten.js?t=${timestamp}`;
+                    const newUrl = `./toBeOverWritten.js?t=${timestamp}`;
+                    console.log('Updating script to:', newUrl);
+                    script.src = newUrl;
                     
                     // Also refresh the displayed source
                     setTimeout(() => {
@@ -559,6 +561,7 @@ console.log(message);</textarea>
                             .then(response => response.text())
                             .then(content => {
                                 document.getElementById('scriptContent').textContent = content;
+                                console.log('Source code updated');
                             });
                     }, 1000);
                     
@@ -626,7 +629,9 @@ console.log(message);</textarea>
                     // Force reload the script with cache busting
                     const timestamp = new Date().getTime();
                     const script = document.getElementById('targetScript');
-                    script.src = `./toBeOverWritten.js?t=${timestamp}`;
+                    const newUrl = `./toBeOverWritten.js?t=${timestamp}`;
+                    console.log('Force updating script to:', newUrl);
+                    script.src = newUrl;
                     
                     // Also refresh the displayed source
                     setTimeout(() => {
@@ -634,6 +639,7 @@ console.log(message);</textarea>
                             .then(response => response.text())
                             .then(content => {
                                 document.getElementById('scriptContent').textContent = content;
+                                console.log('Force source code updated');
                             });
                     }, 1000);
                     
