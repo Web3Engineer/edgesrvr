@@ -1,4 +1,5 @@
-//000 000 00
+// ooooooo
+
 
 // This will be the new content of toBeOverWritten.js
 console.log('Hello from overwritten file!');
