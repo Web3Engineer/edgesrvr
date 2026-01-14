@@ -548,12 +548,22 @@ console.log(message);</textarea>
                     
                     showStatus(successMsg, 'success');
                     
-                    // Force reload the script with cache busting
+                    // Force reload by removing and recreating the script tag
                     const timestamp = new Date().getTime();
-                    const script = document.getElementById('targetScript');
+                    const oldScript = document.getElementById('targetScript');
                     const newUrl = `./toBeOverWritten.js?t=${timestamp}`;
-                    console.log('Updating script to:', newUrl);
-                    script.src = newUrl;
+                    console.log('Removing old script and creating new one:', newUrl);
+                    
+                    // Remove old script
+                    oldScript.remove();
+                    
+                    // Create new script element
+                    const newScript = document.createElement('script');
+                    newScript.id = 'targetScript';
+                    newScript.src = newUrl;
+                    
+                    // Add to DOM
+                    oldScript.parentNode.appendChild(newScript);
                     
                     // Also refresh the displayed source
                     setTimeout(() => {
@@ -626,12 +636,22 @@ console.log(message);</textarea>
                         'success'
                     );
                     
-                    // Force reload the script with cache busting
+                    // Force reload by removing and recreating the script tag
                     const timestamp = new Date().getTime();
-                    const script = document.getElementById('targetScript');
+                    const oldScript = document.getElementById('targetScript');
                     const newUrl = `./toBeOverWritten.js?t=${timestamp}`;
-                    console.log('Force updating script to:', newUrl);
-                    script.src = newUrl;
+                    console.log('Force removing old script and creating new one:', newUrl);
+                    
+                    // Remove old script
+                    oldScript.remove();
+                    
+                    // Create new script element
+                    const newScript = document.createElement('script');
+                    newScript.id = 'targetScript';
+                    newScript.src = newUrl;
+                    
+                    // Add to DOM
+                    oldScript.parentNode.appendChild(newScript);
                     
                     // Also refresh the displayed source
                     setTimeout(() => {
