@@ -322,10 +322,23 @@ console.log(message);</textarea>
             
             <div class="live-output">
                 <h3>📁 Current Content from toBeOverWritten.js</h3>
-                <div class="output-content" id="liveOutput">Content loaded below:</div>
+                <div class="output-content" id="liveOutput">
+                    <div id="scriptContent">Loading source code...</div>
+                </div>
                 <script src="./toBeOverWritten.js" id="targetScript"></script>
+                <script>
+                    // Load and display the source code
+                    fetch('./toBeOverWritten.js')
+                        .then(response => response.text())
+                        .then(content => {
+                            document.getElementById('scriptContent').textContent = content;
+                        })
+                        .catch(() => {
+                            document.getElementById('scriptContent').textContent = 'Could not load source code';
+                        });
+                </script>
                 <p style="margin-top: 10px; font-size: 12px; color: #6e7681;">
-                    � Refresh the page to see updated content after overwriting
+                    💡 Refresh the page to see updated content after overwriting
                 </p>
             </div>
         </div>
