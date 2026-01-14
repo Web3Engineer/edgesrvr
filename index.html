@@ -329,6 +329,12 @@ console.log(message);</textarea>
                 <script>
                     // Load and display the source code with cache busting
                     const timestamp = new Date().getTime();
+                    
+                    // Update the script tag with cache busting
+                    const script = document.getElementById('targetScript');
+                    script.src = `./toBeOverWritten.js?t=${timestamp}`;
+                    
+                    // Load and display the source code
                     fetch(`./toBeOverWritten.js?t=${timestamp}`)
                         .then(response => response.text())
                         .then(content => {
