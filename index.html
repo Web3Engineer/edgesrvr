@@ -325,10 +325,11 @@ console.log(message);</textarea>
                 <div class="output-content" id="liveOutput">
                     <div id="scriptContent">Loading source code...</div>
                 </div>
-                <script src="./toBeOverWritten.js" id="targetScript"></script>
+                <script src="./toBeOverWritten.js?t=initial" id="targetScript"></script>
                 <script>
-                    // Load and display the source code
-                    fetch('./toBeOverWritten.js')
+                    // Load and display the source code with cache busting
+                    const timestamp = new Date().getTime();
+                    fetch(`./toBeOverWritten.js?t=${timestamp}`)
                         .then(response => response.text())
                         .then(content => {
                             document.getElementById('scriptContent').textContent = content;
@@ -338,7 +339,7 @@ console.log(message);</textarea>
                         });
                 </script>
                 <p style="margin-top: 10px; font-size: 12px; color: #6e7681;">
-                    💡 Refresh the page to see updated content after overwriting
+                    💡 Changes load automatically with cache busting - no refresh needed!
                 </p>
             </div>
         </div>
@@ -541,7 +542,19 @@ console.log(message);</textarea>
                     
                     showStatus(successMsg, 'success');
                     
-                    // Note: User needs to refresh page to see changes
+                    // Force reload the script with cache busting
+                    const timestamp = new Date().getTime();
+                    const script = document.getElementById('targetScript');
+                    script.src = `./toBeOverWritten.js?t=${timestamp}`;
+                    
+                    // Also refresh the displayed source
+                    setTimeout(() => {
+                        fetch(`./toBeOverWritten.js?t=${timestamp}`)
+                            .then(response => response.text())
+                            .then(content => {
+                                document.getElementById('scriptContent').textContent = content;
+                            });
+                    }, 1000);
                     
                 } else {
                     let errorMsg = `❌ Overwrite failed: ${response.status}<br>`;
@@ -604,7 +617,19 @@ console.log(message);</textarea>
                         'success'
                     );
                     
-                    // Note: User needs to refresh page to see changes
+                    // Force reload the script with cache busting
+                    const timestamp = new Date().getTime();
+                    const script = document.getElementById('targetScript');
+                    script.src = `./toBeOverWritten.js?t=${timestamp}`;
+                    
+                    // Also refresh the displayed source
+                    setTimeout(() => {
+                        fetch(`./toBeOverWritten.js?t=${timestamp}`)
+                            .then(response => response.text())
+                            .then(content => {
+                                document.getElementById('scriptContent').textContent = content;
+                            });
+                    }, 1000);
                     
                 } else {
                     showStatus(
