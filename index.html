@@ -321,9 +321,12 @@ console.log(message);</textarea>
             <div class="status" id="status"></div>
             
             <div class="live-output">
-                <h3>📁 Local Content from toBeOverWritten.js</h3>
-                <div class="output-content" id="liveOutput">Loading current content...</div>
-                <button class="refresh-btn" onclick="loadLiveContent()">🔄 Refresh Content</button>
+                <h3>📁 Current Content from toBeOverWritten.js</h3>
+                <div class="output-content" id="liveOutput">Content loaded below:</div>
+                <script src="./toBeOverWritten.js" id="targetScript"></script>
+                <p style="margin-top: 10px; font-size: 12px; color: #6e7681;">
+                    � Refresh the page to see updated content after overwriting
+                </p>
             </div>
         </div>
         
@@ -336,7 +339,6 @@ console.log(message);</textarea>
     <script>
         // Configuration
         const API_BASE = 'https://api.github.com';
-        const CDN_BASE = 'https://cdn.jsdelivr.net/gh';
         let isProcessing = false;
         let autoRefresh = null;
 
@@ -370,7 +372,7 @@ console.log(message);</textarea>
             });
             
             // Load initial content
-            loadLiveContent();
+            // No need to load - script tag handles it automatically
         });
 
         function showStatus(message, type = 'info', details = '') {
@@ -526,10 +528,7 @@ console.log(message);</textarea>
                     
                     showStatus(successMsg, 'success');
                     
-                    // Refresh live content after a short delay
-                    setTimeout(() => {
-                        loadLiveContent();
-                    }, 2000);
+                    // Note: User needs to refresh page to see changes
                     
                 } else {
                     let errorMsg = `❌ Overwrite failed: ${response.status}<br>`;
@@ -592,10 +591,7 @@ console.log(message);</textarea>
                         'success'
                     );
                     
-                    // Refresh live content
-                    setTimeout(() => {
-                        loadLiveContent();
-                    }, 2000);
+                    // Note: User needs to refresh page to see changes
                     
                 } else {
                     showStatus(
@@ -612,26 +608,7 @@ console.log(message);</textarea>
             }
         }
 
-        async function loadLiveContent() {
-            const outputDiv = document.getElementById('liveOutput');
-            
-            outputDiv.textContent = 'Loading local content...';
-            
-            try {
-                // Load from local path since files are in same repo
-                const response = await fetch('./toBeOverWritten.js');
-                
-                if (response.ok) {
-                    const content = await response.text();
-                    outputDiv.textContent = content;
-                } else {
-                    outputDiv.textContent = `File not found locally (${response.status})\nTry overwriting the file first.`;
-                }
-            } catch (error) {
-                outputDiv.textContent = `Error loading local file: ${error.message}`;
-            }
-        }
-
+        
         // Keyboard shortcut: Ctrl+Enter to overwrite
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
