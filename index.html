@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Edge Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #161b22;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1f6feb 0%, #0969da 100%);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .tagline {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #8b949e;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #1f6feb;
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.1);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #6e7681;
+            margin-top: 4px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #238636;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2ea043;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+        
+        .btn-secondary:hover {
+            background: #30363d;
+        }
+        
+        .btn-danger {
+            background: rgba(218, 54, 51, 0.1);
+            color: #f85149;
+            border: 1px solid rgba(218, 54, 51, 0.4);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(218, 54, 51, 0.2);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-success {
+            background: rgba(46, 160, 67, 0.1);
+            border: 1px solid rgba(46, 160, 67, 0.4);
+            color: #3fb950;
+            display: block;
+        }
+        
+        .status-error {
+            background: rgba(218, 54, 51, 0.1);
+            border: 1px solid rgba(218, 54, 51, 0.4);
+            color: #f85149;
+            display: block;
+        }
+        
+        .status-info {
+            background: rgba(56, 139, 253, 0.1);
+            border: 1px solid rgba(56, 139, 253, 0.4);
+            color: #58a6ff;
+            display: block;
+        }
+        
+        .status pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow-x: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #30363d;
+            font-size: 12px;
+            color: #6e7681;
+        }
+        
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(31, 111, 235, 0.2);
+            color: #58a6ff;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        .live-output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
+        
+        .live-output h3 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .output-content {
+            background: #161b22;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #30363d;
+            min-height: 60px;
+            font-family: inherit;
+            font-size: 13px;
+            color: #c9d1d9;
+            white-space: pre-wrap;
+        }
+        
+        .refresh-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            color: #c9d1d9;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: #30363d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GitHub Edge Server <span class="mode-badge">LIVE</span></h1>
+            <div class="tagline">Overwrite JavaScript files via GitHub API and see changes instantly</div>
+        </div>
+        
+        <div class="content">
+            <div class="input-group">
+                <label for="token">GitHub Token</label>
+                <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+            </div>
+            
+            <div class="input-group">
+                <label for="repo">Repository</label>
+                <input type="text" id="repo" placeholder="username/repository" spellcheck="false">
+            </div>
+            
+            <div class="input-group">
+                <label for="content">JavaScript Content (toBeOverWritten.js)</label>
+                <textarea id="content" spellcheck="false">// This will be the new content of toBeOverWritten.js
+console.log('Hello from overwritten file!');
+alert('File was overwritten at: ' + new Date().toISOString());
+
+// You can write any JavaScript here
+const message = "This is the new content that was overwritten";
+console.log(message);</textarea>
+                <div class="char-count" id="charCount">0 characters</div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn-primary" onclick="overwriteFile()" id="overwriteBtn">
+                    <span id="btnText">Overwrite toBeOverWritten.js</span>
+                </button>
+                <button class="btn-secondary" onclick="testConnection()">
+                    Test Connection
+                </button>
+            </div>
+            
+            <button class="btn-danger" onclick="forceOverwrite()" style="margin-top: 10px;">
+                ⚡ Force Overwrite (No SHA)
+            </button>
+            
+            <div class="status" id="status"></div>
+            
+            <div class="live-output">
+                <h3>📁 Local Content from toBeOverWritten.js</h3>
+                <div class="output-content" id="liveOutput">Loading current content...</div>
+                <button class="refresh-btn" onclick="loadLiveContent()">🔄 Refresh Content</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>GitHub Pages + GitHub API = Edge Server 🚀</p>
+            <p>File: toBeOverWritten.js | Path: Local | Auto-refresh: <span id="autoStatus">OFF</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'https://api.github.com';
+        const CDN_BASE = 'https://cdn.jsdelivr.net/gh';
+        let isProcessing = false;
+        let autoRefresh = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update character count
+            const contentArea = document.getElementById('content');
+            const charCount = document.getElementById('charCount');
+            
+            contentArea.addEventListener('input', () => {
+                charCount.textContent = `${contentArea.value.length} characters`;
+            });
+            
+            // Set initial count
+            charCount.textContent = `${contentArea.value.length} characters`;
+            
+            // Load from session storage
+            const savedToken = sessionStorage.getItem('gh_token');
+            const savedRepo = sessionStorage.getItem('gh_repo');
+            
+            if (savedToken) document.getElementById('token').value = savedToken;
+            if (savedRepo) document.getElementById('repo').value = savedRepo;
+            
+            // Auto-save
+            document.getElementById('token').addEventListener('input', (e) => {
+                sessionStorage.setItem('gh_token', e.target.value);
+            });
+            
+            document.getElementById('repo').addEventListener('input', (e) => {
+                sessionStorage.setItem('gh_repo', e.target.value);
+            });
+            
+            // Load initial content
+            loadLiveContent();
+        });
+
+        function showStatus(message, type = 'info', details = '') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status status-${type}`;
+            
+            let html = message;
+            if (details) {
+                html += `<pre>${details}</pre>`;
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+
+        function setProcessing(state) {
+            isProcessing = state;
+            const btn = document.getElementById('overwriteBtn');
+            const btnText = document.getElementById('btnText');
+            
+            if (state) {
+                btn.disabled = true;
+                btnText.innerHTML = '<span class="spinner"></span> Overwriting...';
+            } else {
+                btn.disabled = false;
+                btnText.textContent = 'Overwrite toBeOverWritten.js';
+            }
+        }
+
+        async function testConnection() {
+            const token = document.getElementById('token').value.trim();
+            const repo = document.getElementById('repo').value.trim();
+            
+            if (!token) {
+                showStatus('❌ Please enter a GitHub token', 'error');
+                return;
+            }
+            
+            showStatus('Testing connection to GitHub...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/user`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    const rateLimit = response.headers.get('x-ratelimit-remaining');
+                    
+                    let statusMsg = `✅ Connected as <strong>${user.login}</strong>`;
+                    if (rateLimit) {
+                        statusMsg += ` | Rate limit: ${rateLimit} remaining`;
+                    }
+                    
+                    if (repo) {
+                        statusMsg += `<br>Target: <code>${repo}/toBeOverWritten.js</code>`;
+                    }
+                    
+                    showStatus(statusMsg, 'success');
+                } else {
+                    showStatus(`❌ Connection failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function getCurrentSHA(token, repo) {
+            try {
+                const response = await fetch(`${API_BASE}/repos/${repo}/contents/toBeOverWritten.js`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.sha;
+                }
+            } catch (e) {
+                // File doesn't exist, that's fine
+            }
+            return null;
+        }
+
+        async function overwriteFile() {
+            if (isProcessing) return;
+            
+            const token = document.getElementById('token').value.trim();
+            const repo = document.getElementById('repo').value.trim();
+            let content = document.getElementById('content').value;
+            
+            // Validate
+            if (!token || !repo) {
+                showStatus('❌ Please enter token and repository', 'error');
+                return;
+            }
+            
+            if (!content.trim()) {
+                showStatus('❌ JavaScript content cannot be empty', 'error');
+                return;
+            }
+            
+            setProcessing(true);
+            showStatus('Getting current file state...', 'info');
+            
+            try {
+                // Get current SHA
+                const sha = await getCurrentSHA(token, repo);
+                
+                showStatus(sha ? 'Updating existing file...' : 'Creating new file...', 'info');
+                
+                // Prepare payload
+                const payload = {
+                    message: `Update toBeOverWritten.js via Edge Server - ${new Date().toISOString()}`,
+                    content: btoa(unescape(encodeURIComponent(content))),
+                    branch: 'main'
+                };
+                
+                // Add SHA if file exists
+                if (sha) {
+                    payload.sha = sha;
+                }
+                
+                // Execute overwrite
+                const response = await fetch(`${API_BASE}/repos/${repo}/contents/toBeOverWritten.js`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json().catch(() => ({}));
+                
+                if (response.ok) {
+                    const rateLimit = response.headers.get('x-ratelimit-remaining');
+                    
+                    let successMsg = `✅ <strong>FILE OVERWRITTEN SUCCESSFULLY</strong><br>`;
+                    successMsg += `File: toBeOverWritten.js<br>`;
+                    successMsg += `Commit: ${result.commit?.sha?.substring(0, 8) || 'N/A'}<br>`;
+                    
+                    if (rateLimit) {
+                        successMsg += `Rate limit: ${rateLimit} remaining<br>`;
+                    }
+                    
+                    successMsg += `<a href="${result.content?.html_url || '#'}" target="_blank">View on GitHub →</a>`;
+                    
+                    showStatus(successMsg, 'success');
+                    
+                    // Refresh live content after a short delay
+                    setTimeout(() => {
+                        loadLiveContent();
+                    }, 2000);
+                    
+                } else {
+                    let errorMsg = `❌ Overwrite failed: ${response.status}<br>`;
+                    errorMsg += result.message ? `Message: ${result.message}` : '';
+                    showStatus(errorMsg, 'error', JSON.stringify(result, null, 2));
+                }
+            } catch (error) {
+                showStatus(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                setProcessing(false);
+            }
+        }
+
+        async function forceOverwrite() {
+            if (isProcessing) return;
+            
+            const token = document.getElementById('token').value.trim();
+            const repo = document.getElementById('repo').value.trim();
+            let content = document.getElementById('content').value;
+            
+            if (!token || !repo) {
+                showStatus('❌ Token and repository required', 'error');
+                return;
+            }
+            
+            if (!confirm("⚡ FORCE OVERWRITE: This will skip SHA checks and may overwrite concurrent changes. Continue?")) {
+                return;
+            }
+            
+            setProcessing(true);
+            showStatus('⚡ FORCE OVERWRITING...', 'info');
+            
+            try {
+                // Force write without SHA
+                const payload = {
+                    message: `FORCE OVERWRITE toBeOverWritten.js - ${new Date().toISOString()}`,
+                    content: btoa(unescape(encodeURIComponent(content))),
+                    branch: 'main'
+                    // NO SHA = FORCE CREATE/REPLACE
+                };
+                
+                const response = await fetch(`${API_BASE}/repos/${repo}/contents/toBeOverWritten.js`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json().catch(() => ({}));
+                
+                if (response.ok || response.status === 201) {
+                    showStatus(
+                        `⚡ <strong>FORCE OVERWRITE COMPLETE</strong><br>` +
+                        `File was forcibly replaced.<br>` +
+                        `Commit: ${result.commit?.sha?.substring(0, 8) || 'N/A'}<br>` +
+                        `<a href="${result.content?.html_url || '#'}" target="_blank">View →</a>`,
+                        'success'
+                    );
+                    
+                    // Refresh live content
+                    setTimeout(() => {
+                        loadLiveContent();
+                    }, 2000);
+                    
+                } else {
+                    showStatus(
+                        `💥 Force overwrite failed: ${response.status}<br>` +
+                        `Check token permissions and repo access.`,
+                        'error',
+                        JSON.stringify(result, null, 2)
+                    );
+                }
+            } catch (error) {
+                showStatus(`💥 Critical error: ${error.message}`, 'error');
+            } finally {
+                setProcessing(false);
+            }
+        }
+
+        async function loadLiveContent() {
+            const outputDiv = document.getElementById('liveOutput');
+            
+            outputDiv.textContent = 'Loading local content...';
+            
+            try {
+                // Load from local path since files are in same repo
+                const response = await fetch('./toBeOverWritten.js');
+                
+                if (response.ok) {
+                    const content = await response.text();
+                    outputDiv.textContent = content;
+                } else {
+                    outputDiv.textContent = `File not found locally (${response.status})\nTry overwriting the file first.`;
+                }
+            } catch (error) {
+                outputDiv.textContent = `Error loading local file: ${error.message}`;
+            }
+        }
+
+        // Keyboard shortcut: Ctrl+Enter to overwrite
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                if (!isProcessing) {
+                    overwriteFile();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
